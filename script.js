@@ -3,6 +3,21 @@ let humanChoice;
 let computerScore = 0;
 let playerScore = 0;
 
+while (computerScore != 5 && playerScore != 5) {
+    humanChoice = prompt("Rock, Paper or Scissors?").toLowerCase();
+    getComputerChoice();
+    playRound(humanChoice, computerChoice);
+    console.log(`Computer chose: ${computerChoice}.`);
+    console.log(`SCORE: Player ${playerScore} | Computer ${computerScore}`);
+    console.log("");
+}
+
+if (computerScore == 5) {
+    console.log("The computer won! Loser!");
+} else if (playerScore == 5) {
+    console.log("You WON! Congrats!");
+}
+
 function getComputerChoice() {
     computerChoice = Math.floor(Math.random() * (3 - 1 + 1) + 1);
     switch (computerChoice) {
@@ -68,11 +83,5 @@ function playRound(humanChoice, computerChoice){
                     break;
             }
             break;
-
     }
-
 }
-
-humanChoice = prompt("Rock, Paper or Scissors?").toLowerCase();
-getComputerChoice();
-playRound(humanChoice, computerChoice);

@@ -1,3 +1,20 @@
 body {
     margin: 0;
+    display: flex;
+}
+
+#rps-buttons {
+    position: absolute;
+    list-style-type: none;
+    display: flex;
+    padding: 0;
+    left: 30%; 
+    top: 70%; 
+}
+
+.rps-btn {
+    padding: 20px 40px;
+    margin: 10px;
+    background-color: white;
+    border-radius: 8px;
 }

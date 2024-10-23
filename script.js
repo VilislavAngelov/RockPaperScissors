@@ -1,7 +1,4 @@
 //TODO
-//make a function to make scissors sign
-//make the shake function
-//attach computerChoice to the functions to show choice
 //clone the hand to use it as playerHand
 //be able to enter input myself
 //make the buttons to choose R P or S
@@ -40,23 +37,25 @@ loader.load('RiggedArms.glb', function (gltf) {
         }
     });
 
-
     computerHand.position.set(5 , 0, 2);
     computerHand.rotation.set(0, 0, 0);
     computerHand.rotation.order = 'YZX';
     computerHand.rotation.y = Math.PI;
     computerHand.rotation.z = Math.PI / 2;
     computerHand.rotation.x = Math.PI;
-    
+
     makeFist();
 
-    gsap.delayedCall(1, makePaper);
+    gsap.delayedCall(0.6, initializeGame);
 
-    gsap.delayedCall(2, resetToFist);
 
-    gsap.delayedCall(3, makeScissors);
+    // gsap.delayedCall(1, makePaper);
 
-    gsap.delayedCall(4, resetToFist);
+    // gsap.delayedCall(2, resetToFist);
+
+    // gsap.delayedCall(3, makeScissors);
+
+    // gsap.delayedCall(4, resetToFist);
 
     
 }, undefined, function (error) {
@@ -81,67 +80,125 @@ scene.add( floor );
 floor.rotation.x = -0.5 * Math.PI;
 floor.position.y = -1.5;
 
-const directionalLight = new THREE.DirectionalLight( 0xffffff, 4 );
-directionalLight.position.set( 0, 15, 5 ); //default; light shining from top
+const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 1 );
+directionalLight2.position.set( 0, 5, 0 ); //default; light shining from top
+directionalLight2.castShadow = true; // default false
+scene.add( directionalLight2 );
+
+const directionalLight = new THREE.DirectionalLight( 0xffffff, 3.5 );
+directionalLight.position.set( 0, 8, 10 ); //default; light shining from top
 directionalLight.castShadow = true; // default false
 scene.add( directionalLight );
 
-const helper = new THREE.DirectionalLightHelper( directionalLight, 5 );
-scene.add( helper );
 
 
 camera.position.z = 10;
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
+// Modify the makeFist function
 function makeFist() {
+    const duration = 0.5; // Animation duration in seconds
+
+    // Create a GSAP timeline with an onComplete callback
+    const tl = gsap.timeline({
+        onComplete: storeFistRotations, // Store rotations after the fist is made
+    });
+
     // Animate thumb bones
-    gsap.to(bones[3].rotation, { z: bones[3].rotation.z - 0.5, duration: 0.5 });
-    gsap.to(bones[4].rotation, { y: -1, duration: 0.5 });
-    gsap.to(bones[5].rotation, { z: bones[5].rotation.z - 1.3, duration: 0.5 });
+    tl.to(bones[3].rotation, { z: bones[3].rotation.z - 0.5, duration }, 0);
+    tl.to(bones[4].rotation, { y: bones[4].rotation.y - 1, duration }, 0);
+    tl.to(bones[5].rotation, { z: bones[5].rotation.z - 1.3, duration }, 0);
 
-// Animate index finger bones
-    gsap.to(bones[7].rotation, { z: bones[7].rotation.z - 1.3, duration: 0.5 });
-    gsap.to(bones[8].rotation, { z: bones[8].rotation.z - 1, duration: 0.5 });
-    gsap.to(bones[9].rotation, { z: bones[9].rotation.z - 1, duration: 0.5 });
+    // Animate index finger bones
+    tl.to(bones[7].rotation, { z: bones[7].rotation.z - 1.3, duration }, 0);
+    tl.to(bones[8].rotation, { z: bones[8].rotation.z - 1, duration }, 0);
+    tl.to(bones[9].rotation, { z: bones[9].rotation.z - 1, duration }, 0);
 
-// Animate middle finger bones
-    gsap.to(bones[11].rotation, { x: bones[11].rotation.x + 1.3, duration: 0.5 });
-    gsap.to(bones[12].rotation, { x: bones[12].rotation.x + 1, duration: 0.5 });
-    gsap.to(bones[13].rotation, { x: bones[13].rotation.x + 1, duration: 0.5 });
+    // Animate middle finger bones
+    tl.to(bones[11].rotation, { x: bones[11].rotation.x + 1.3, duration }, 0);
+    tl.to(bones[12].rotation, { x: bones[12].rotation.x + 1, duration }, 0);
+    tl.to(bones[13].rotation, { x: bones[13].rotation.x + 1, duration }, 0);
 
-// Animate ring finger bones
-    gsap.to(bones[15].rotation, { z: bones[15].rotation.z + 1.3, duration: 0.5 });
-    gsap.to(bones[16].rotation, { z: bones[16].rotation.z + 1, duration: 0.5 });
-    gsap.to(bones[17].rotation, { z: bones[17].rotation.z + 1, duration: 0.5 });
+    // Animate ring finger bones
+    tl.to(bones[15].rotation, { z: bones[15].rotation.z + 1.3, duration }, 0);
+    tl.to(bones[16].rotation, { z: bones[16].rotation.z + 1, duration }, 0);
+    tl.to(bones[17].rotation, { z: bones[17].rotation.z + 1, duration }, 0);
 
-// Animate pinky finger bones
-    gsap.to(bones[19].rotation, { z: bones[19].rotation.z + 1.3, duration: 0.5 });
-    gsap.to(bones[20].rotation, { z: bones[20].rotation.z + 1, duration: 0.5 });
-    gsap.to(bones[21].rotation, { z: bones[21].rotation.z + 1, duration: 0.5 });
+    // Animate pinky finger bones
+    tl.to(bones[19].rotation, { z: bones[19].rotation.z + 1.3, duration }, 0);
+    tl.to(bones[20].rotation, { z: bones[20].rotation.z + 1, duration }, 0);
+    tl.to(bones[21].rotation, { z: bones[21].rotation.z + 1, duration }, 0);
+}
 
+// Function to store the fist rotations after the animation completes
+function storeFistRotations() {
     bones.forEach((bone, index) => {
         originalRotations[index] = {
             x: bone.rotation.x,
             y: bone.rotation.y,
             z: bone.rotation.z,
-        }
-    })
-
+        };
+    });
 }
 
 function resetToFist() {
-    const duration = 0.5; // Animation duration in seconds
-  
+    const duration = 0.5;
+
     bones.forEach((bone, index) => {
-      gsap.to(bone.rotation, {
-        x: originalRotations[index].x,
-        y: originalRotations[index].y,
-        z: originalRotations[index].z,
-        duration,
-      });
+        gsap.to(bone.rotation, {
+            x: originalRotations[index].x,
+            y: originalRotations[index].y,
+            z: originalRotations[index].z,
+            duration,
+        });
     });
 }
+
+function performGesture(gestureFunction) {
+    const tl = gsap.timeline();
+  
+    // Perform the gesture
+    tl.call(gestureFunction);
+  
+    // Hold the gesture for a moment
+    tl.to({}, { duration: 0.5 }); // Hold for 0.5 seconds
+  
+    // Return to fist position
+    tl.call(resetToFist);
+  }
+
+function shakeHand(onCompleteCallback) {
+    const duration = 0.1;
+    const shakeAmount = 0.2;
+  
+     // Check if bones[0] exists
+     if (!bones[0]) {
+        console.error('bones[0] is undefined in shakeHand');
+        if (onCompleteCallback) onCompleteCallback();
+        return;
+    }
+
+    // Store the initial rotation to return to it later
+    const initialRotationZ = bones[0].rotation.z;
+  
+    // Create a GSAP timeline
+    const tl = gsap.timeline({ onComplete: onCompleteCallback });
+  
+    // Start by moving the hand down
+    tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration }, 0);
+  
+    // Perform the shake up and down three times
+    for (let i = 0; i < 2; i++) {
+      // Move hand up
+      tl.to(bones[0].rotation, { z: initialRotationZ});
+      // Move hand down
+      tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration });
+    }
+  
+    // Return to the initial position
+    tl.to(bones[0].rotation, { z: initialRotationZ, duration });
+  }
   
 
 function makePaper() {
@@ -190,14 +247,31 @@ function animate() {
 }
 renderer.setAnimationLoop( animate );
 
-// while (computerScore != 5 && playerScore != 5) {
-//     humanChoice = prompt("Rock, Paper or Scissors?").toLowerCase();
-//     computerChoice = getComputerChoice();
-//     playRound(humanChoice, computerChoice);
-//     console.log(`Computer chose: ${computerChoice}.`);
-//     console.log(`SCORE: Player ${playerScore} | Computer ${computerScore}`);
-//     console.log("");
-// }
+function initializeGame() {
+
+// humanChoice = prompt("Rock, Paper or Scissors?").toLowerCase();
+computerChoice = getComputerChoice();
+
+    shakeHand(() => {
+        if( computerChoice === ROCK) {
+            performGesture(resetToFist);
+        } else if ( computerChoice === PAPER) {
+            performGesture(makePaper);
+        } else {
+            performGesture(makeScissors);
+        }
+    });
+
+
+console.log(computerChoice);
+// gsap.delayedCall(1.3, makeScissors);
+
+// gsap.delayedCall(2, resetToFist);
+// playRound(humanChoice, computerChoice);
+// console.log(`Computer chose: ${computerChoice}.`);
+// console.log(`SCORE: Player ${playerScore} | Computer ${computerScore}`);
+// console.log("");
+
 
 if (computerScore == 5) {
     console.log("The computer won! Loser!");
@@ -225,4 +299,5 @@ function playRound(humanChoice, computerChoice){
         console.log("You Lose!");
         computerScore++;
     }
+}
 }

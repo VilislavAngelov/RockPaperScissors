@@ -1,7 +1,5 @@
 //TODO
 //sound effects when you lose/win and on shake, click a button
-//screen fx when you win/lose red/green
-//screen shake when you shake hand or when you lose
 //make the buttons prettier, put in a picture of the action in the btn
 // 4d text?
 
@@ -10,6 +8,9 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js"; // Import OutlinePass
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js"; // Import EffectComposer
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"; // Import RenderPass
 
 let computerChoice, playerChoice;
 let computerScore = 0,
@@ -36,7 +37,9 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const geometryWall = new THREE.PlaneGeometry(20, 20);
+
+
+const geometryWall = new THREE.PlaneGeometry(30, 20);
 const materialWall = new THREE.MeshBasicMaterial({
   color: 0x9fc6fc,
   side: THREE.DoubleSide,
@@ -44,7 +47,7 @@ const materialWall = new THREE.MeshBasicMaterial({
 const wall = new THREE.Mesh(geometryWall, materialWall);
 scene.add(wall);
 
-const geometryFloor = new THREE.PlaneGeometry(20, 20);
+const geometryFloor = new THREE.PlaneGeometry(30, 20);
 const materialFloor = new THREE.MeshBasicMaterial({
   color: 0x89aad9,
   side: THREE.DoubleSide,
@@ -55,11 +58,11 @@ floor.rotation.x = -0.5 * Math.PI;
 floor.position.y = -1.5;
 
 const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight2.position.set(0, 5, 0); //default; light shining from top
+directionalLight2.position.set(0, 5, 0);
 scene.add(directionalLight2);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
-directionalLight.position.set(0, 8, 10); //default; light shining from top
+directionalLight.position.set(0, 8, 10);
 scene.add(directionalLight);
 
 const damageMaterial = new THREE.MeshBasicMaterial({
@@ -116,43 +119,75 @@ mp3s.forEach((name) => {
   });
 });
 
+let composer; // Effect composer for post-processing
+const playerOutlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+const computerOutlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+
+// Other code remains unchanged...
+
+const renderPass = new RenderPass(scene, camera);
+composer = new EffectComposer(renderer);
+composer.addPass(renderPass);
+composer.addPass(playerOutlinePass);
+composer.addPass(computerOutlinePass);
+
+// Set the outline parameters for each model
+playerOutlinePass.edgeStrength = 5; 
+playerOutlinePass.edgeGlow = 1; 
+playerOutlinePass.usePatternTexture = false; 
+playerOutlinePass.visibleEdgeColor.set(0x00ff00); // Set player outline to green
+playerOutlinePass.hiddenEdgeColor.set(0x00ff00); // Ensure hidden edges match
+
+computerOutlinePass.edgeStrength = 5; 
+computerOutlinePass.edgeGlow = 1; 
+computerOutlinePass.usePatternTexture = false; 
+computerOutlinePass.visibleEdgeColor.set(0xff0000); // Set computer outline to red
+computerOutlinePass.hiddenEdgeColor.set(0xff0000); // Ensure hidden edges match
+
 camera.position.z = 10;
+
+window.addEventListener('resize', function() {
+    const width = window.innerWidth;  // Use const to avoid variable shadowing
+    const height = window.innerHeight;
+    
+    renderer.setSize(width, height);  // Set the renderer size
+    camera.aspect = width / height;    // Update the camera aspect ratio
+    camera.updateProjectionMatrix();    // Update the camera projection matrix
+});
+
+window.dispatchEvent(new Event('resize'));
 
 const loader = new GLTFLoader();
 
 let loadingCounter = 0;
 
 loader.load(
-  "RiggedArms.glb",
-  function (gltf) {
-    computerHand = gltf.scene;
-    scene.add(computerHand);
-
-    setupHand(computerHand, computerBones, "computer");
-
-    checkAllModelsLoaded();
-  },
-  undefined,
-  function (error) {
-    console.error(error);
-  }
-);
-
-loader.load(
-  "RiggedArms.glb",
-  function (gltf) {
-    playerHand = gltf.scene;
-    scene.add(playerHand);
-
-    setupHand(playerHand, playerBones, "player");
-
-    checkAllModelsLoaded();
-  },
-  undefined,
-  function (error) {
-    console.error(error);
-  }
-);
+    "RiggedArms.glb",
+    function (gltf) {
+      computerHand = gltf.scene;
+      scene.add(computerHand);
+      setupHand(computerHand, computerBones, "computer");
+      checkAllModelsLoaded();
+    },
+    undefined,
+    function (error) {
+      console.error(error);
+    }
+  );
+  
+  loader.load(
+    "RiggedArms.glb",
+    function (gltf) {
+      playerHand = gltf.scene;
+      scene.add(playerHand);
+      setupHand(playerHand, playerBones, "player");
+      checkAllModelsLoaded();
+    },
+    undefined,
+    function (error) {
+      console.error(error);
+    }
+  );
 
 function setupHand(hand, bonesArray, type) {
   hand.rotation.order = "YZX";
@@ -177,14 +212,12 @@ function setupHand(hand, bonesArray, type) {
     }
   });
 
-  // Make the fist pose
   makeFist(bonesArray);
 }
 
 function makeFist(bones) {
-  const duration = 1; // Animation duration in seconds
+  const duration = 1;
 
-  // Create a GSAP timeline with an onComplete callback
   const tl = gsap.timeline();
 
   // Animate thumb bones
@@ -237,13 +270,17 @@ function resetToFist(bones) {
   });
 }
 
+// Call this function when both models are loaded
 function checkAllModelsLoaded() {
-  loadingCounter++;
-  if (loadingCounter === 2) {
-    // Both hands have been loaded and set up
-    gsap.delayedCall(0.6, getPlayerChoice);
+    loadingCounter++;
+    if (loadingCounter === 2) {
+      // Set the outline pass targets for each model
+      playerOutlinePass.selectedObjects.push(playerHand); // Add player hand for green outline
+      computerOutlinePass.selectedObjects.push(computerHand); // Add computer hand for red outline
+  
+      gsap.delayedCall(0.6, getPlayerChoice);
+    }
   }
-}
 
 function shakeHand(bones, onCompleteCallback) {
   const duration = 0.1;
@@ -330,15 +367,13 @@ function onClick(event) {
 }
 
 function initializeGame() {
-  // Get the computer's choice
+
   computerChoice = getComputerChoice();
 
   shakeWoosh.stop();
   shakeWoosh.play();
 
-  // Shake both hands
   shakeHand(computerBones, () => {
-    // After shaking, perform the computer's gesture
     if (computerChoice === PAPER) {
       makePaper(computerBones);
     } else if (computerChoice === SCISSORS) {
@@ -351,7 +386,6 @@ function initializeGame() {
   });
 
   shakeHand(playerBones, () => {
-    // After shaking, perform the player's gesture
     if (playerChoice === PAPER) {
       makePaper(playerBones);
     } else if (playerChoice === SCISSORS) {
@@ -363,7 +397,6 @@ function initializeGame() {
     });
   });
 
-  // Proceed to determine the winner
   gsap.delayedCall(0.5, () => {
     playRound(playerChoice, computerChoice);
     if (playerScore == 5 || computerScore == 5) {
@@ -414,7 +447,7 @@ function getComputerChoice() {
 }
 
 function animate() {
-  renderer.render(scene, camera);
+    composer.render();
 }
 renderer.setAnimationLoop(animate);
 
@@ -492,28 +525,24 @@ function resetGame() {
   getPlayerChoice();
 }
 
-// Function to show the red damage effect
 function showDamageEffect() {
-  const duration = 500; // Effect duration in ms
-  damageMaterial.opacity = 0.5; // Set the initial opacity for the flash
+  const duration = 500;
+  damageMaterial.opacity = 0.5;
 
-  // Use GSAP or a simple animation to fade the opacity back to 0
   gsap.to(damageMaterial, {
     opacity: 0,
-    duration: 0.5, // Fade out duration
+    duration: 0.5,
     ease: "power1.out",
   });
 }
 
-// Function to show the red damage effect
 function showWinEffect() {
-  const duration = 500; // Effect duration in ms
-  winMaterial.opacity = 0.5; // Set the initial opacity for the flash
+  const duration = 500;
+  winMaterial.opacity = 0.5;
 
-  // Use GSAP or a simple animation to fade the opacity back to 0
   gsap.to(winMaterial, {
     opacity: 0,
-    duration: 0.5, // Fade out duration
+    duration: 0.5,
     ease: "power1.out",
   });
 }
@@ -534,7 +563,6 @@ function screenShake(camera, intensity = 0.05, duration = 0.3) {
     yoyo: true,
     repeat: Math.floor(duration / 0.05),
     onComplete: () => {
-      // Reset to original position after shaking
       camera.position.set(
         originalPosition.x,
         originalPosition.y,

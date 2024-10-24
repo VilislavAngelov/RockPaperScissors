@@ -1,18 +1,22 @@
 //TODO
 //sound effects when you lose/win and on shake, click a button
-//screen fx when you win/lose red/green 
+//screen fx when you win/lose red/green
 //screen shake when you shake hand or when you lose
 //make the buttons prettier, put in a picture of the action in the btn
 // 4d text?
 
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+//after element on the stars to make an outline
+
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 let computerChoice, playerChoice;
-let computerScore = 0, playerScore = 0;
+let computerScore = 0,
+  playerScore = 0;
 let computerHand, playerHand;
-let computerBones = [], playerBones = [];
+let computerBones = [],
+  playerBones = [];
 let fistRotations = [];
 let isGameRunning = true;
 
@@ -21,62 +25,96 @@ const PAPER = "paper";
 const SCISSORS = "scissors";
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 
-const renderer = new THREE.WebGLRenderer;
-renderer.setSize( window.innerWidth, window.innerHeight );
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const geometryWall = new THREE.PlaneGeometry( 20, 20 );
-const materialWall = new THREE.MeshBasicMaterial( {color: 0x9fc6fc, side: THREE.DoubleSide} );
-const wall = new THREE.Mesh( geometryWall, materialWall );
-scene.add( wall );
+const geometryWall = new THREE.PlaneGeometry(20, 20);
+const materialWall = new THREE.MeshBasicMaterial({
+  color: 0x9fc6fc,
+  side: THREE.DoubleSide,
+});
+const wall = new THREE.Mesh(geometryWall, materialWall);
+scene.add(wall);
 
-const geometryFloor = new THREE.PlaneGeometry( 20, 20 );
-const materialFloor = new THREE.MeshBasicMaterial( {color: 0x89aad9, side: THREE.DoubleSide} );
-const floor = new THREE.Mesh( geometryFloor, materialFloor );
-scene.add( floor );
+const geometryFloor = new THREE.PlaneGeometry(20, 20);
+const materialFloor = new THREE.MeshBasicMaterial({
+  color: 0x89aad9,
+  side: THREE.DoubleSide,
+});
+const floor = new THREE.Mesh(geometryFloor, materialFloor);
+scene.add(floor);
 floor.rotation.x = -0.5 * Math.PI;
 floor.position.y = -1.5;
 
-const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 1 );
-directionalLight2.position.set( 0, 5, 0 ); //default; light shining from top
-scene.add( directionalLight2 );
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight2.position.set(0, 5, 0); //default; light shining from top
+scene.add(directionalLight2);
 
-const directionalLight = new THREE.DirectionalLight( 0xffffff, 3.5 );
-directionalLight.position.set( 0, 8, 10 ); //default; light shining from top
-scene.add( directionalLight );
+const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
+directionalLight.position.set(0, 8, 10); //default; light shining from top
+scene.add(directionalLight);
 
-const controls = new OrbitControls( camera, renderer.domElement );
+const damageMaterial = new THREE.MeshBasicMaterial({
+  color: 0xff0000,
+  transparent: true,
+  opacity: 0,
+});
+const winMaterial = new THREE.MeshBasicMaterial({
+  color: 0x00ff00,
+  transparent: true,
+  opacity: 0,
+});
+const damageGeometry = new THREE.PlaneGeometry(20, 20);
+const damageMesh = new THREE.Mesh(damageGeometry, damageMaterial);
+const winMesh = new THREE.Mesh(damageGeometry, winMaterial);
+
+scene.add(winMesh);
+scene.add(damageMesh);
+
+winMesh.position.z = 9;
+damageMesh.position.z = 9;
+
+const controls = new OrbitControls(camera, renderer.domElement);
 
 //Sound FX
 const sounds = [];
-let winGrunt, loseGrunt, shakeWoosh;
+let winGrunt, loseGrunt, shakeWoosh, roundWin;
 const manager = new THREE.LoadingManager();
 manager.onLoad = () => console.log("loaded", sounds);
 const audioLoader = new THREE.AudioLoader(manager);
-const mp3s = ["gruntWin", "gruntLose", "ShakeWoosh"];
+const mp3s = ["gruntWin", "gruntLose", "ShakeWoosh", "roundWin"];
 const listener = new THREE.AudioListener();
-camera.add(listener)
+camera.add(listener);
 
 mp3s.forEach((name) => {
-    const sound = new THREE.Audio(listener);
-    sound.name = name;
-    if (name === "gruntWin") {
-        winGrunt = sound;
-    }
-    if (name === "gruntLose") {
-        loseGrunt = sound;
-    }
-    if (name === "ShakeWoosh") {
-        shakeWoosh = sound;
-    }
+  const sound = new THREE.Audio(listener);
+  sound.name = name;
+  if (name === "gruntWin") {
+    winGrunt = sound;
+  }
+  if (name === "gruntLose") {
+    loseGrunt = sound;
+  }
+  if (name === "ShakeWoosh") {
+    shakeWoosh = sound;
+  }
+  if (name === "roundWin") {
+    roundWin = sound;
+  }
 
-    sounds.push(sound)
-    audioLoader.load(`/sfx/${name}.mp3`, function (buffer) {
-        sound.setBuffer(buffer)
-    })
-})
+  sounds.push(sound);
+  audioLoader.load(`/sfx/${name}.mp3`, function (buffer) {
+    sound.setBuffer(buffer);
+  });
+});
 
 camera.position.z = 10;
 
@@ -84,111 +122,119 @@ const loader = new GLTFLoader();
 
 let loadingCounter = 0;
 
-loader.load('RiggedArms.glb', function (gltf) {
-  computerHand = gltf.scene;
-  scene.add(computerHand);
+loader.load(
+  "RiggedArms.glb",
+  function (gltf) {
+    computerHand = gltf.scene;
+    scene.add(computerHand);
 
-  setupHand(computerHand, computerBones, 'computer');
+    setupHand(computerHand, computerBones, "computer");
 
-  checkAllModelsLoaded();
-}, undefined, function (error) {
-  console.error(error);
-});
+    checkAllModelsLoaded();
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  }
+);
 
-loader.load('RiggedArms.glb', function (gltf) {
-  playerHand = gltf.scene;
-  scene.add(playerHand);
+loader.load(
+  "RiggedArms.glb",
+  function (gltf) {
+    playerHand = gltf.scene;
+    scene.add(playerHand);
 
-  setupHand(playerHand, playerBones, 'player');
+    setupHand(playerHand, playerBones, "player");
 
-  checkAllModelsLoaded();
-}, undefined, function (error) {
-  console.error(error);
-});
+    checkAllModelsLoaded();
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  }
+);
 
 function setupHand(hand, bonesArray, type) {
+  hand.rotation.order = "YZX";
 
-    hand.rotation.order = 'YZX';
+  if (type === "computer") {
+    hand.position.set(6, 0, 2);
+    hand.rotation.set(0, 0, 0);
+    hand.rotation.y = Math.PI;
+    hand.rotation.z = Math.PI / 2;
+    hand.rotation.x = Math.PI;
+  } else {
+    hand.position.set(-6, 0, 2);
+    hand.rotation.set(0, 0, 0);
+    hand.rotation.y = 0;
+    hand.rotation.z = Math.PI / 2;
+    hand.rotation.x = -Math.PI;
+  }
 
-    if (type === 'computer') {
-        hand.position.set(6 , 0, 2);
-        hand.rotation.set(0, 0, 0);
-        hand.rotation.y = Math.PI;
-        hand.rotation.z = Math.PI / 2;
-        hand.rotation.x = Math.PI;
-      } else {
-        hand.position.set(-6, 0, 2);
-        hand.rotation.set(0, 0, 0);
-        hand.rotation.y = 0;
-        hand.rotation.z = Math.PI / 2;
-        hand.rotation.x = -Math.PI;
-      }
+  hand.traverse(function (object) {
+    if (object.isBone) {
+      bonesArray.push(object);
+    }
+  });
 
-      hand.traverse(function (object) {
-        if (object.isBone) {
-          bonesArray.push(object)
-        }
-    });
-
-    // Make the fist pose
-    makeFist(bonesArray);
-
+  // Make the fist pose
+  makeFist(bonesArray);
 }
 
 function makeFist(bones) {
-    const duration = 1; // Animation duration in seconds
+  const duration = 1; // Animation duration in seconds
 
-    // Create a GSAP timeline with an onComplete callback
-    const tl = gsap.timeline();
+  // Create a GSAP timeline with an onComplete callback
+  const tl = gsap.timeline();
 
-    // Animate thumb bones
-    tl.to(bones[3].rotation, { z: bones[3].rotation.z - 0.5, duration }, 0);
-    tl.to(bones[4].rotation, { y: bones[4].rotation.y - 1, duration }, 0);
-    tl.to(bones[5].rotation, { z: bones[5].rotation.z - 1.3, duration }, 0);
+  // Animate thumb bones
+  tl.to(bones[3].rotation, { z: bones[3].rotation.z - 0.5, duration }, 0);
+  tl.to(bones[4].rotation, { y: bones[4].rotation.y - 1, duration }, 0);
+  tl.to(bones[5].rotation, { z: bones[5].rotation.z - 1.3, duration }, 0);
 
-    // Animate index finger bones
-    tl.to(bones[7].rotation, { z: bones[7].rotation.z - 1.3, duration }, 0);
-    tl.to(bones[8].rotation, { z: bones[8].rotation.z - 1, duration }, 0);
-    tl.to(bones[9].rotation, { z: bones[9].rotation.z - 1, duration }, 0);
+  // Animate index finger bones
+  tl.to(bones[7].rotation, { z: bones[7].rotation.z - 1.3, duration }, 0);
+  tl.to(bones[8].rotation, { z: bones[8].rotation.z - 1, duration }, 0);
+  tl.to(bones[9].rotation, { z: bones[9].rotation.z - 1, duration }, 0);
 
-    // Animate middle finger bones
-    tl.to(bones[11].rotation, { x: bones[11].rotation.x + 1.3, duration }, 0);
-    tl.to(bones[12].rotation, { x: bones[12].rotation.x + 1, duration }, 0);
-    tl.to(bones[13].rotation, { x: bones[13].rotation.x + 1, duration }, 0);
+  // Animate middle finger bones
+  tl.to(bones[11].rotation, { x: bones[11].rotation.x + 1.3, duration }, 0);
+  tl.to(bones[12].rotation, { x: bones[12].rotation.x + 1, duration }, 0);
+  tl.to(bones[13].rotation, { x: bones[13].rotation.x + 1, duration }, 0);
 
-    // Animate ring finger bones
-    tl.to(bones[15].rotation, { z: bones[15].rotation.z + 1.3, duration }, 0);
-    tl.to(bones[16].rotation, { z: bones[16].rotation.z + 1, duration }, 0);
-    tl.to(bones[17].rotation, { z: bones[17].rotation.z + 1, duration }, 0);
+  // Animate ring finger bones
+  tl.to(bones[15].rotation, { z: bones[15].rotation.z + 1.3, duration }, 0);
+  tl.to(bones[16].rotation, { z: bones[16].rotation.z + 1, duration }, 0);
+  tl.to(bones[17].rotation, { z: bones[17].rotation.z + 1, duration }, 0);
 
-    // Animate pinky finger bones
-    tl.to(bones[19].rotation, { z: bones[19].rotation.z + 1.3, duration }, 0);
-    tl.to(bones[20].rotation, { z: bones[20].rotation.z + 1, duration }, 0);
-    tl.to(bones[21].rotation, { z: bones[21].rotation.z + 1, duration }, 0);
+  // Animate pinky finger bones
+  tl.to(bones[19].rotation, { z: bones[19].rotation.z + 1.3, duration }, 0);
+  tl.to(bones[20].rotation, { z: bones[20].rotation.z + 1, duration }, 0);
+  tl.to(bones[21].rotation, { z: bones[21].rotation.z + 1, duration }, 0);
 
-    tl.call(() => storeFistRotations(bones));
+  tl.call(() => storeFistRotations(bones));
 }
 
 function storeFistRotations(bones) {
-    bones.forEach((bone, index) => {
-        fistRotations[index] = {
-            x: bone.rotation.x,
-            y: bone.rotation.y,
-            z: bone.rotation.z,
-        };
-    });
+  bones.forEach((bone, index) => {
+    fistRotations[index] = {
+      x: bone.rotation.x,
+      y: bone.rotation.y,
+      z: bone.rotation.z,
+    };
+  });
 }
 
 function resetToFist(bones) {
-    const duration = 0.5;
-    bones.forEach((bone, index) => {
-        gsap.to(bone.rotation, {
-            x: fistRotations[index].x,
-            y: fistRotations[index].y,
-            z: fistRotations[index].z,
-            duration,
-        });
+  const duration = 0.5;
+  bones.forEach((bone, index) => {
+    gsap.to(bone.rotation, {
+      x: fistRotations[index].x,
+      y: fistRotations[index].y,
+      z: fistRotations[index].z,
+      duration,
     });
+  });
 }
 
 function checkAllModelsLoaded() {
@@ -199,260 +245,301 @@ function checkAllModelsLoaded() {
   }
 }
 
-function performGesture(bones, originalRotations, gestureFunction) {
-    const tl = gsap.timeline();
-  
-    // Perform the gesture
-    tl.call(() => gestureFunction(bones, originalRotations));
+function shakeHand(bones, onCompleteCallback) {
+  const duration = 0.1;
+  const shakeAmount = 0.2;
 
-    // Hold the gesture for a moment
-    tl.to({}, { duration: 0.5 });
-
-    // Return to fist position
-    tl.call(() => resetToFist(bones, originalRotations));
+  if (!bones[0]) {
+    console.error("bones[0] is undefined in shakeHand");
+    if (onCompleteCallback) onCompleteCallback();
+    return;
   }
 
-function shakeHand(bones, onCompleteCallback) {
-    const duration = 0.1;
-    const shakeAmount = 0.2;
-  
-    if (!bones[0]) {
-        console.error('bones[0] is undefined in shakeHand');
-        if (onCompleteCallback) onCompleteCallback();
-        return;
-      }
-    
-      const initialRotationZ = bones[0].rotation.z;
-    
-      const tl = gsap.timeline({ onComplete: onCompleteCallback });
-    
-      tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration }, 0);
-    
-      for (let i = 0; i < 2; i++) {
-        tl.to(bones[0].rotation, { z: initialRotationZ, duration });
-        tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration });
-      }
-    
-      tl.to(bones[0].rotation, { z: initialRotationZ, duration });
+  const initialRotationZ = bones[0].rotation.z;
+
+  const tl = gsap.timeline({ onComplete: onCompleteCallback });
+
+  tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration }, 0);
+
+  for (let i = 0; i < 2; i++) {
+    tl.to(bones[0].rotation, { z: initialRotationZ, duration });
+    tl.to(bones[0].rotation, { z: initialRotationZ - shakeAmount, duration });
+  }
+
+  tl.to(bones[0].rotation, { z: initialRotationZ, duration });
 }
-  
 
 function makePaper(bones) {
+  const duration = 0.2;
 
-    const duration = 0.2;
+  gsap.to(bones[3].rotation, { z: bones[3].rotation.z + 0.5, duration });
+  gsap.to(bones[4].rotation, { y: bones[4].rotation.y + 1, duration });
+  gsap.to(bones[5].rotation, { z: bones[5].rotation.z + 1.3, duration });
 
-    gsap.to(bones[3].rotation, { z: bones[3].rotation.z + 0.5, duration });
-    gsap.to(bones[4].rotation, { y: bones[4].rotation.y + 1, duration });
-    gsap.to(bones[5].rotation, { z: bones[5].rotation.z + 1.3, duration });
+  // Animate index finger bones
+  gsap.to(bones[7].rotation, { z: bones[7].rotation.z + 1.3, duration });
+  gsap.to(bones[8].rotation, { z: bones[8].rotation.z + 1, duration });
+  gsap.to(bones[9].rotation, { z: bones[9].rotation.z + 1, duration });
 
-    // Animate index finger bones
-    gsap.to(bones[7].rotation, { z: bones[7].rotation.z + 1.3, duration });
-    gsap.to(bones[8].rotation, { z: bones[8].rotation.z + 1, duration });
-    gsap.to(bones[9].rotation, { z: bones[9].rotation.z + 1, duration });
+  // Animate middle finger bones
+  gsap.to(bones[11].rotation, { x: bones[11].rotation.x - 1.3, duration });
+  gsap.to(bones[12].rotation, { x: bones[12].rotation.x - 1, duration });
+  gsap.to(bones[13].rotation, { x: bones[13].rotation.x - 1, duration });
 
-    // Animate middle finger bones
-    gsap.to(bones[11].rotation, { x: bones[11].rotation.x - 1.3, duration });
-    gsap.to(bones[12].rotation, { x: bones[12].rotation.x - 1, duration });
-    gsap.to(bones[13].rotation, { x: bones[13].rotation.x - 1, duration });
+  // Animate ring finger bones
+  gsap.to(bones[15].rotation, { z: bones[15].rotation.z - 1.3, duration });
+  gsap.to(bones[16].rotation, { z: bones[16].rotation.z - 1, duration });
+  gsap.to(bones[17].rotation, { z: bones[17].rotation.z - 1, duration });
 
-    // Animate ring finger bones
-    gsap.to(bones[15].rotation, { z: bones[15].rotation.z - 1.3, duration });
-    gsap.to(bones[16].rotation, { z: bones[16].rotation.z - 1, duration });
-    gsap.to(bones[17].rotation, { z: bones[17].rotation.z - 1, duration });
-
-    // Animate pinky finger bones
-    gsap.to(bones[19].rotation, { z: bones[19].rotation.z - 1.3, duration });
-    gsap.to(bones[20].rotation, { z: bones[20].rotation.z - 1, duration });
-    gsap.to(bones[21].rotation, { z: bones[21].rotation.z - 1, duration });
+  // Animate pinky finger bones
+  gsap.to(bones[19].rotation, { z: bones[19].rotation.z - 1.3, duration });
+  gsap.to(bones[20].rotation, { z: bones[20].rotation.z - 1, duration });
+  gsap.to(bones[21].rotation, { z: bones[21].rotation.z - 1, duration });
 }
 
 function makeScissors(bones) {
+  const duration = 0.2;
 
-    const duration = 0.2;
+  // Animate index finger bones
+  gsap.to(bones[7].rotation, { z: bones[7].rotation.z + 1.3, duration });
+  gsap.to(bones[8].rotation, { z: bones[8].rotation.z + 1, duration });
+  gsap.to(bones[9].rotation, { z: bones[9].rotation.z + 1, duration });
 
-    // Animate index finger bones
-    gsap.to(bones[7].rotation, { z: bones[7].rotation.z + 1.3, duration });
-    gsap.to(bones[8].rotation, { z: bones[8].rotation.z + 1, duration });
-    gsap.to(bones[9].rotation, { z: bones[9].rotation.z + 1, duration });
-
-    // Animate middle finger bones
-    gsap.to(bones[11].rotation, { x: bones[11].rotation.x - 1.3, duration });
-    gsap.to(bones[12].rotation, { x: bones[12].rotation.x - 1, duration });
-    gsap.to(bones[13].rotation, { x: bones[13].rotation.x - 1, duration });
-
+  // Animate middle finger bones
+  gsap.to(bones[11].rotation, { x: bones[11].rotation.x - 1.3, duration });
+  gsap.to(bones[12].rotation, { x: bones[12].rotation.x - 1, duration });
+  gsap.to(bones[13].rotation, { x: bones[13].rotation.x - 1, duration });
 }
 
-
 function getPlayerChoice() {
-    let choices = document.getElementsByClassName("rps-btn");
+  let choices = document.getElementsByClassName("rps-btn");
 
-        Array.from(choices).forEach(function(element) {
-            element.addEventListener('click', onClick);;
-        });
+  Array.from(choices).forEach(function (element) {
+    element.addEventListener("click", onClick);
+  });
 }
 
 function onClick(event) {
-    if (isGameRunning) {
-        playerChoice = event.target.textContent.toLowerCase();
-        
-        isGameRunning = false;
-
-        initializeGame();
-    }
-}
-
-function initializeGame() {
-
-    // Get the computer's choice
-    computerChoice = getComputerChoice();
-    
-        shakeWoosh.stop();
-        shakeWoosh.play();
-  
-    // Shake both hands
-    shakeHand(computerBones, () => {
-      // After shaking, perform the computer's gesture
-       if (computerChoice === PAPER) {
-        makePaper(computerBones);
-      } else if (computerChoice === SCISSORS){
-        makeScissors(computerBones);
-      }
-
-      gsap.delayedCall(1, () => {
-        resetToFist(computerBones);
-      });
-    });
-  
-    shakeHand(playerBones, () => {
-      // After shaking, perform the player's gesture
-      if (playerChoice === PAPER) {
-        makePaper(playerBones);
-      } else if (playerChoice === SCISSORS) {
-        makeScissors(playerBones);
-      }
-
-      gsap.delayedCall(1, () => {
-        resetToFist(playerBones);
-      });
-    });
-  
-    // Proceed to determine the winner
-    gsap.delayedCall(0.5, () => {
-      playRound(playerChoice, computerChoice);
-      if(playerScore == 5 || computerScore == 5) {
-        gameOver();
-      }
-
-      isGameRunning = true;
-    });
-  }
-
-  function playRound(playerChoice, computerChoice) {
-    if (playerChoice === computerChoice) {
-      document.getElementById("roundWinText").style.display='none';
-      document.getElementById("roundLoseText").style.display='none';
-      document.getElementById("roundDrawText").style.display='block';
-      winGrunt.stop();
-      winGrunt.play();
-    } else if (
-      (playerChoice === ROCK && computerChoice === SCISSORS) ||
-      (playerChoice === PAPER && computerChoice === ROCK) ||
-      (playerChoice === SCISSORS && computerChoice === PAPER)
-    ) {
-      document.getElementById("roundWinText").style.display='block';
-      document.getElementById("roundLoseText").style.display='none';
-      document.getElementById("roundDrawText").style.display='none';
-      winGrunt.stop();
-      winGrunt.play();
-      increaseScore('player');
-    } else {
-      document.getElementById("roundWinText").style.display='none';
-      document.getElementById("roundLoseText").style.display='block';
-      document.getElementById("roundDrawText").style.display='none';
-      loseGrunt.stop();
-      loseGrunt.play();
-      increaseScore('computer');
-    }
-  }
-
-function getComputerChoice() {
-    const choices = [ROCK, PAPER, SCISSORS];
-    const randomIndex = Math.floor(Math.random() * 3);
-    return choices[randomIndex];
-}
-  
-function animate() {
-	renderer.render( scene, camera );
-}
-renderer.setAnimationLoop( animate );
-
-function increaseScore(type) {
-    if( type == 'player'){
-        playerScore++;
-        for(let i = 1; i <= playerScore; i++) {
-            document.querySelector(`.playerRoundsWon li:nth-child(${i}) img`).style.filter='invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)';
-        }
-    } else {
-        computerScore++;
-        for(let i = 1; i <= computerScore; i++) {
-            document.querySelector(`.computerRoundsWon li:nth-child(${6 - i}) img`).style.filter='invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)';
-        }
-    }
-}
-
-function gameOver() {
+  if (isGameRunning) {
+    playerChoice = event.target.textContent.toLowerCase();
 
     isGameRunning = false;
 
-    let choices = document.getElementsByClassName("rps-btn");
-    Array.from(choices).forEach(function(element) {
-        element.removeEventListener('click', onClick);
+    initializeGame();
+  }
+}
+
+function initializeGame() {
+  // Get the computer's choice
+  computerChoice = getComputerChoice();
+
+  shakeWoosh.stop();
+  shakeWoosh.play();
+
+  // Shake both hands
+  shakeHand(computerBones, () => {
+    // After shaking, perform the computer's gesture
+    if (computerChoice === PAPER) {
+      makePaper(computerBones);
+    } else if (computerChoice === SCISSORS) {
+      makeScissors(computerBones);
+    }
+
+    gsap.delayedCall(0.5, () => {
+      resetToFist(computerBones);
     });
+  });
 
+  shakeHand(playerBones, () => {
+    // After shaking, perform the player's gesture
+    if (playerChoice === PAPER) {
+      makePaper(playerBones);
+    } else if (playerChoice === SCISSORS) {
+      makeScissors(playerBones);
+    }
 
-    if(playerScore == 5) {
-        document.getElementById("roundWinText").style.display='none';
-        document.getElementById('gameWinText').style.display='block';
-        showReset();
-      } else if (computerScore == 5) {
-        document.getElementById("roundLoseText").style.display='none';
-        document.getElementById('gameLoseText').style.display='block';
-        showReset();
-      }
+    gsap.delayedCall(0.5, () => {
+      resetToFist(playerBones);
+    });
+  });
+
+  // Proceed to determine the winner
+  gsap.delayedCall(0.5, () => {
+    playRound(playerChoice, computerChoice);
+    if (playerScore == 5 || computerScore == 5) {
+      gameOver();
+    }
+
+    isGameRunning = true;
+  });
+}
+
+function playRound(playerChoice, computerChoice) {
+  if (playerChoice === computerChoice) {
+    document.getElementById("roundWinText").style.display = "none";
+    document.getElementById("roundLoseText").style.display = "none";
+    document.getElementById("roundDrawText").style.display = "block";
+    winGrunt.stop();
+    winGrunt.play();
+  } else if (
+    (playerChoice === ROCK && computerChoice === SCISSORS) ||
+    (playerChoice === PAPER && computerChoice === ROCK) ||
+    (playerChoice === SCISSORS && computerChoice === PAPER)
+  ) {
+    document.getElementById("roundWinText").style.display = "block";
+    document.getElementById("roundLoseText").style.display = "none";
+    document.getElementById("roundDrawText").style.display = "none";
+    winGrunt.stop();
+    winGrunt.play();
+    roundWin.stop();
+    roundWin.play();
+    showWinEffect();
+    increaseScore("player");
+  } else {
+    document.getElementById("roundWinText").style.display = "none";
+    document.getElementById("roundLoseText").style.display = "block";
+    document.getElementById("roundDrawText").style.display = "none";
+    showDamageEffect();
+    screenShake(camera, 0.3, 0.3);
+    loseGrunt.stop();
+    loseGrunt.play();
+    increaseScore("computer");
+  }
+}
+
+function getComputerChoice() {
+  const choices = [ROCK, PAPER, SCISSORS];
+  const randomIndex = Math.floor(Math.random() * 3);
+  return choices[randomIndex];
+}
+
+function animate() {
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(animate);
+
+function increaseScore(type) {
+  if (type == "player") {
+    playerScore++;
+    for (let i = 1; i <= playerScore; i++) {
+      document.querySelector(
+        `.playerRoundsWon li:nth-child(${i}) img`
+      ).style.filter =
+        "invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)";
+    }
+  } else {
+    computerScore++;
+    for (let i = 1; i <= computerScore; i++) {
+      document.querySelector(
+        `.computerRoundsWon li:nth-child(${6 - i}) img`
+      ).style.filter =
+        "invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)";
+    }
+  }
+}
+
+function gameOver() {
+  isGameRunning = false;
+
+  let choices = document.getElementsByClassName("rps-btn");
+  Array.from(choices).forEach(function (element) {
+    element.removeEventListener("click", onClick);
+  });
+
+  if (playerScore == 5) {
+    document.getElementById("roundWinText").style.display = "none";
+    document.getElementById("gameWinText").style.display = "block";
+    showReset();
+  } else if (computerScore == 5) {
+    document.getElementById("roundLoseText").style.display = "none";
+    document.getElementById("gameLoseText").style.display = "block";
+    showReset();
+  }
 }
 
 function showReset() {
-    document.getElementById('btn-rock').style.display='none';
-    document.getElementById('btn-paper').style.display='none';
-    document.getElementById('btn-scissors').style.display='none';
-    document.getElementById('btn-reset').style.display='block';
+  document.getElementById("btn-rock").style.display = "none";
+  document.getElementById("btn-paper").style.display = "none";
+  document.getElementById("btn-scissors").style.display = "none";
+  document.getElementById("btn-reset").style.display = "block";
 
-    document.getElementById('btn-reset').addEventListener('click', resetGame);
+  document.getElementById("btn-reset").addEventListener("click", resetGame);
 }
 
 function resetGame() {
-    document.getElementById('btn-rock').style.display='block';
-    document.getElementById('btn-paper').style.display='block';
-    document.getElementById('btn-scissors').style.display='block';
-    document.getElementById('btn-reset').style.display='none';
-    playerScore = 0;
-    computerScore = 0;
+  document.getElementById("btn-rock").style.display = "block";
+  document.getElementById("btn-paper").style.display = "block";
+  document.getElementById("btn-scissors").style.display = "block";
+  document.getElementById("btn-reset").style.display = "none";
+  playerScore = 0;
+  computerScore = 0;
 
-    console.log(playerScore);
-    console.log(computerScore);
+  console.log(playerScore);
+  console.log(computerScore);
 
-    let resetStars = document.querySelectorAll('.starWon img');
+  let resetStars = document.querySelectorAll(".starWon img");
 
-    resetStars.forEach(function(star) {
-        star.style.filter='invert(100%) sepia(0%) saturate(7500%) hue-rotate(258deg) brightness(109%) contrast(98%)';
-    })
+  resetStars.forEach(function (star) {
+    star.style.filter =
+      "invert(100%) sepia(0%) saturate(7500%) hue-rotate(258deg) brightness(109%) contrast(98%)";
+  });
 
-    document.getElementById("gameWinText").style.display='none';
-    document.getElementById("gameLoseText").style.display='none';
+  document.getElementById("gameWinText").style.display = "none";
+  document.getElementById("gameLoseText").style.display = "none";
 
-    isGameRunning = true;
+  isGameRunning = true;
 
-    getPlayerChoice();
+  getPlayerChoice();
 }
-  
-  
+
+// Function to show the red damage effect
+function showDamageEffect() {
+  const duration = 500; // Effect duration in ms
+  damageMaterial.opacity = 0.5; // Set the initial opacity for the flash
+
+  // Use GSAP or a simple animation to fade the opacity back to 0
+  gsap.to(damageMaterial, {
+    opacity: 0,
+    duration: 0.5, // Fade out duration
+    ease: "power1.out",
+  });
+}
+
+// Function to show the red damage effect
+function showWinEffect() {
+  const duration = 500; // Effect duration in ms
+  winMaterial.opacity = 0.5; // Set the initial opacity for the flash
+
+  // Use GSAP or a simple animation to fade the opacity back to 0
+  gsap.to(winMaterial, {
+    opacity: 0,
+    duration: 0.5, // Fade out duration
+    ease: "power1.out",
+  });
+}
+
+function screenShake(camera, intensity = 0.05, duration = 0.3) {
+  const originalPosition = {
+    x: camera.position.x,
+    y: camera.position.y,
+    z: camera.position.z,
+  };
+
+  gsap.to(camera.position, {
+    x: originalPosition.x + (Math.random() - 0.5) * intensity,
+    y: originalPosition.y + (Math.random() - 0.5) * intensity,
+    z: originalPosition.z + (Math.random() - 0.5) * intensity,
+    duration: 0.05,
+    ease: "power1.inOut",
+    yoyo: true,
+    repeat: Math.floor(duration / 0.05),
+    onComplete: () => {
+      // Reset to original position after shaking
+      camera.position.set(
+        originalPosition.x,
+        originalPosition.y,
+        originalPosition.z
+      );
+    },
+  });
+}

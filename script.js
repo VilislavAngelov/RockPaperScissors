@@ -5,12 +5,12 @@
 
 //after element on the stars to make an outline
 
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js"; // Import OutlinePass
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js"; // Import EffectComposer
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js"; // Import RenderPass
+import * as THREE from "./node_modules/three/build/three.module.js";
+import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "./node_modules/three/examples/jsm/controls/OrbitControls.js";
+import { OutlinePass } from "./node_modules/three/examples/jsm/postprocessing/OutlinePass.js"; // Import OutlinePass
+import { EffectComposer } from "./node_modules/three/examples/jsm/postprocessing/EffectComposer.js"; // Import EffectComposer
+import { RenderPass } from "./node_modules/three/examples/jsm/postprocessing/RenderPass.js"; // Import RenderPass
 
 let computerChoice, playerChoice;
 let computerScore = 0,

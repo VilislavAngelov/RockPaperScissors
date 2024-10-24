@@ -18,3 +18,49 @@ body {
     background-color: white;
     border-radius: 8px;
 }
+
+.roundOutcome {
+    position: absolute;
+    padding: 0;
+    left: 40%; 
+    top: 20%; 
+}
+
+#roundWinText {
+    display: none;
+}
+
+#roundLoseText {
+    display: none;
+}
+
+#roundDrawText {
+    display: none;
+}
+
+.playerRoundsWon {
+    position: absolute;
+    padding: 0;
+    left: 10%; 
+    top: 20%; 
+    list-style-type: none;
+    display: flex;
+}
+
+.computerRoundsWon {
+    position: absolute;
+    padding: 0;
+    left: 70%; 
+    top: 20%; 
+    list-style-type: none;
+    display: flex;
+}
+
+.starWon {
+    margin-right: 10px;
+}
+
+.starWon img {
+    height: 30px;
+    filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(258deg) brightness(109%) contrast(98%);
+}

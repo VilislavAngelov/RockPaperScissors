@@ -1,11 +1,20 @@
+//TODO
+//keep score on the ui and update it
+//make it so people can't span choices
+//game loop up to 5
+//another text to tell you're the winner
+//sound effects when you lose/win and on shake, click a button
+//screen fx when you win/lose red/green 
+//screen shake when you shake hand or when you lose
+//make the buttons prettier, put in a picture of the action in the btn
+// 4d text?
+
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-let computerChoice;
-let humanChoice;
-let computerScore = 0;
-let playerScore = 0;
+let computerChoice, playerChoice;
+let computerScore = 0, playerScore = 0;
 let computerHand, playerHand;
 let computerBones = [], playerBones = [];
 let fistRotations = [];
@@ -18,8 +27,6 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild(renderer.domElement);
 
@@ -37,12 +44,10 @@ floor.position.y = -1.5;
 
 const directionalLight2 = new THREE.DirectionalLight( 0xffffff, 1 );
 directionalLight2.position.set( 0, 5, 0 ); //default; light shining from top
-directionalLight2.castShadow = true; // default false
 scene.add( directionalLight2 );
 
 const directionalLight = new THREE.DirectionalLight( 0xffffff, 3.5 );
 directionalLight.position.set( 0, 8, 10 ); //default; light shining from top
-directionalLight.castShadow = true; // default false
 scene.add( directionalLight );
 
 const controls = new OrbitControls( camera, renderer.domElement );
@@ -86,7 +91,6 @@ function setupHand(hand, bonesArray, type) {
         hand.rotation.z = Math.PI / 2;
         hand.rotation.x = Math.PI;
       } else {
-        
         hand.position.set(-6, 0, 2);
         hand.rotation.set(0, 0, 0);
         hand.rotation.y = 0;
@@ -248,10 +252,6 @@ function makeScissors(bones) {
 
 }
 
-function animate() {
-	renderer.render( scene, camera );
-}
-renderer.setAnimationLoop( animate );
 
 function getPlayerChoice() {
     let choices = document.getElementsByClassName("rps-btn");
@@ -259,7 +259,7 @@ function getPlayerChoice() {
     Array.from(choices).forEach(function(element) {
         element.addEventListener('click', function onClick() {
 
-            humanChoice = element.textContent.toLowerCase();
+            playerChoice = element.textContent.toLowerCase();
 
             // Initialize the game after the player has made a choice
             initializeGame();
@@ -287,9 +287,9 @@ function initializeGame() {
   
     shakeHand(playerBones, () => {
       // After shaking, perform the player's gesture
-      if (humanChoice === PAPER) {
+      if (playerChoice === PAPER) {
         makePaper(playerBones);
-      } else if (humanChoice === SCISSORS) {
+      } else if (playerChoice === SCISSORS) {
         makeScissors(playerBones);
       }
 
@@ -297,35 +297,39 @@ function initializeGame() {
         resetToFist(playerBones);
       });
     });
-
-    
   
     // Proceed to determine the winner
-    gsap.delayedCall(2, () => {
-      playRound(humanChoice, computerChoice);
+    gsap.delayedCall(1, () => {
+      playRound(playerChoice, computerChoice);
       updateScoreboard();
     });
   }
 
-  function playRound(humanChoice, computerChoice) {
-    if (humanChoice === computerChoice) {
-      console.log("It's a draw!");
+  function playRound(playerChoice, computerChoice) {
+    if (playerChoice === computerChoice) {
+      document.getElementById("roundWinText").style.display='none';
+      document.getElementById("roundLoseText").style.display='none';
+      document.getElementById("roundDrawText").style.display='block';
     } else if (
-      (humanChoice === ROCK && computerChoice === SCISSORS) ||
-      (humanChoice === PAPER && computerChoice === ROCK) ||
-      (humanChoice === SCISSORS && computerChoice === PAPER)
+      (playerChoice === ROCK && computerChoice === SCISSORS) ||
+      (playerChoice === PAPER && computerChoice === ROCK) ||
+      (playerChoice === SCISSORS && computerChoice === PAPER)
     ) {
-      console.log("You Win!");
-      playerScore++;
+      document.getElementById("roundWinText").style.display='block';
+      document.getElementById("roundLoseText").style.display='none';
+      document.getElementById("roundDrawText").style.display='none';
+      increaseScore('player');
     } else {
-      console.log("You Lose!");
-      computerScore++;
+      document.getElementById("roundWinText").style.display='none';
+      document.getElementById("roundLoseText").style.display='block';
+      document.getElementById("roundDrawText").style.display='none';
+      increaseScore('computer');
     }
   }
 
   function updateScoreboard() {
     console.log(`Computer chose: ${computerChoice}.`);
-    console.log(`You chose: ${humanChoice}.`);
+    console.log(`You chose: ${playerChoice}.`);
     console.log(`SCORE: Player ${playerScore} | Computer ${computerScore}`);
     console.log("");
 }
@@ -336,5 +340,23 @@ function getComputerChoice() {
     return choices[randomIndex];
 }
   
+function animate() {
+	renderer.render( scene, camera );
+}
+renderer.setAnimationLoop( animate );
+
+function increaseScore(type) {
+    if( type == 'player'){
+        playerScore++;
+        for(let i = 1; i <= playerScore; i++) {
+            document.querySelector(`.playerRoundsWon li:nth-child(${i}) img`).style.filter='invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)';
+        }
+    } else {
+        computerScore++;
+        for(let i = 1; i <= computerScore; i++) {
+            document.querySelector(`.computerRoundsWon li:nth-child(${6 - i}) img`).style.filter='invert(92%) sepia(14%) saturate(3585%) hue-rotate(358deg) brightness(104%) contrast(105%)';
+        }
+    }
+}
   
   

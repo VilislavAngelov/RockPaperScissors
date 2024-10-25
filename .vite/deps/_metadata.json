@@ -1,0 +1,49 @@
+{
+  "hash": "d5113432",
+  "configHash": "c4d4642b",
+  "lockfileHash": "28db04f5",
+  "browserHash": "1fbfb870",
+  "optimized": {
+    "three": {
+      "src": "../../node_modules/three/build/three.module.js",
+      "file": "three.js",
+      "fileHash": "d63e459b",
+      "needsInterop": false
+    },
+    "three/examples/jsm/loaders/GLTFLoader.js": {
+      "src": "../../node_modules/three/examples/jsm/loaders/GLTFLoader.js",
+      "file": "three_examples_jsm_loaders_GLTFLoader__js.js",
+      "fileHash": "01c539e0",
+      "needsInterop": false
+    },
+    "three/examples/jsm/postprocessing/OutlinePass.js": {
+      "src": "../../node_modules/three/examples/jsm/postprocessing/OutlinePass.js",
+      "file": "three_examples_jsm_postprocessing_OutlinePass__js.js",
+      "fileHash": "81f685e6",
+      "needsInterop": false
+    },
+    "three/examples/jsm/postprocessing/EffectComposer.js": {
+      "src": "../../node_modules/three/examples/jsm/postprocessing/EffectComposer.js",
+      "file": "three_examples_jsm_postprocessing_EffectComposer__js.js",
+      "fileHash": "a9fa9656",
+      "needsInterop": false
+    },
+    "three/examples/jsm/postprocessing/RenderPass.js": {
+      "src": "../../node_modules/three/examples/jsm/postprocessing/RenderPass.js",
+      "file": "three_examples_jsm_postprocessing_RenderPass__js.js",
+      "fileHash": "93b10980",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-YZ7RHIIL": {
+      "file": "chunk-YZ7RHIIL.js"
+    },
+    "chunk-3CK76CR2": {
+      "file": "chunk-3CK76CR2.js"
+    },
+    "chunk-Z7OYAWFU": {
+      "file": "chunk-Z7OYAWFU.js"
+    }
+  }
+}

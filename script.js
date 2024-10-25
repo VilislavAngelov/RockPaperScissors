@@ -108,7 +108,7 @@ mp3s.forEach((name) => {
   }
 
   sounds.push(sound);
-  audioLoader.load(`/sfx/${name}.mp3`, function (buffer) {
+  audioLoader.load(`../sfx/${name}.mp3`, function (buffer) {
     sound.setBuffer(buffer);
   });
 });

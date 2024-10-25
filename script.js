@@ -107,7 +107,7 @@ mp3s.forEach((name) => {
   }
 
   sounds.push(sound);
-  audioLoader.load(`../sfx/${name}.mp3`, function (buffer) {
+  audioLoader.load(`./sfx/${name}.mp3`, function (buffer) {
     sound.setBuffer(buffer);
   });
 });
@@ -504,7 +504,7 @@ function resetGame() {
   document.getElementById("btn-scissors").style.display = "block";
   document.getElementById("btn-reset").style.display = "none";
   playerScore = 0;
-  computerScore = 0;
+  computerScore = 0;git 
 
   let resetStars = document.querySelectorAll(".starWon img");
 

@@ -7,7 +7,6 @@
 
 import * as THREE from "./node_modules/three/build/three.module.js";
 import { GLTFLoader } from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "./node_modules/three/examples/jsm/controls/OrbitControls.js";
 import { OutlinePass } from "./node_modules/three/examples/jsm/postprocessing/OutlinePass.js"; // Import OutlinePass
 import { EffectComposer } from "./node_modules/three/examples/jsm/postprocessing/EffectComposer.js"; // Import EffectComposer
 import { RenderPass } from "./node_modules/three/examples/jsm/postprocessing/RenderPass.js"; // Import RenderPass
@@ -85,8 +84,6 @@ scene.add(damageMesh);
 winMesh.position.z = 9;
 damageMesh.position.z = 9;
 
-const controls = new OrbitControls(camera, renderer.domElement);
-
 //Sound FX
 const sounds = [];
 let winGrunt, loseGrunt, shakeWoosh, roundWin;
@@ -122,8 +119,6 @@ mp3s.forEach((name) => {
 let composer; // Effect composer for post-processing
 const playerOutlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
 const computerOutlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-
-// Other code remains unchanged...
 
 const renderPass = new RenderPass(scene, camera);
 composer = new EffectComposer(renderer);

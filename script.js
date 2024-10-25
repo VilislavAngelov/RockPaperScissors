@@ -1,9 +1,8 @@
 //TODO
-//sound effects when you lose/win and on shake, click a button
 //make the buttons prettier, put in a picture of the action in the btn
-// 4d text?
+// 3d text?
 
-//after element on the stars to make an outline
+//how to get the hands closer on small screens
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -35,8 +34,6 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
-
 
 const geometryWall = new THREE.PlaneGeometry(30, 20);
 const materialWall = new THREE.MeshBasicMaterial({
@@ -188,13 +185,21 @@ function setupHand(hand, bonesArray, type) {
   hand.rotation.order = "YZX";
 
   if (type === "computer") {
-    hand.position.set(6, 0, 2);
+    if(window.innerWidth < 600) {
+      hand.position.set(5.2, 0, 2);
+    }else {
+      hand.position.set(6, 0, 2);
+    }
     hand.rotation.set(0, 0, 0);
     hand.rotation.y = Math.PI;
     hand.rotation.z = Math.PI / 2;
     hand.rotation.x = Math.PI;
   } else {
-    hand.position.set(-6, 0, 2);
+    if(window.innerWidth < 600) {
+      hand.position.set(-5.2, 0, 2);
+    }else {
+      hand.position.set(-6, 0, 2);
+    }
     hand.rotation.set(0, 0, 0);
     hand.rotation.y = 0;
     hand.rotation.z = Math.PI / 2;

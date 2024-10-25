@@ -57,7 +57,7 @@ body {
 }
 
 .starWon img {
-    height: 30px;
+    height: clamp(12px, 5vw, 30px);
     filter: invert(100%) sepia(0%) saturate(7500%) hue-rotate(258deg) brightness(109%) contrast(98%);
 }
 
@@ -83,4 +83,18 @@ body {
 
 #roundDrawText {
     display: none;
+}
+
+@media only screen and (max-width: 600px) {
+    .roundsWon {
+        width: 90%;
+        justify-content: space-between;
+    }
+    .starWon {
+        margin-right: 5px;
+    }
+
+    #rps-buttons {
+        margin-bottom: 60%;
+    }
 }

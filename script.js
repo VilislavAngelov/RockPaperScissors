@@ -85,7 +85,6 @@ damageMesh.position.z = 9;
 const sounds = [];
 let winGrunt, loseGrunt, shakeWoosh, roundWin;
 const manager = new THREE.LoadingManager();
-manager.onLoad = () => console.log("loaded", sounds);
 const audioLoader = new THREE.AudioLoader(manager);
 const mp3s = ["gruntWin", "gruntLose", "ShakeWoosh", "roundWin"];
 const listener = new THREE.AudioListener();
@@ -506,9 +505,6 @@ function resetGame() {
   document.getElementById("btn-reset").style.display = "none";
   playerScore = 0;
   computerScore = 0;
-
-  console.log(playerScore);
-  console.log(computerScore);
 
   let resetStars = document.querySelectorAll(".starWon img");
 

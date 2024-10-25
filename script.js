@@ -504,7 +504,7 @@ function resetGame() {
   document.getElementById("btn-scissors").style.display = "block";
   document.getElementById("btn-reset").style.display = "none";
   playerScore = 0;
-  computerScore = 0;git 
+  computerScore = 0;
 
   let resetStars = document.querySelectorAll(".starWon img");
 
